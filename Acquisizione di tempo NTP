@@ -1,0 +1,48 @@
+#include <WiFi.h>
+#include <time.h>
+
+// Credenziali Wi-Fi
+const char* ssid     = "NOME_DELLA_TUA_RETE";
+const char* password = "PASSWORD_DELLA_TUA_RETE";
+
+// Configurazione NTP
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 3600;       // Fuso orario Italia: UTC+1 = 3600 secondi
+const int   daylightOffset_sec = 3600;  // Ora legale (estate): +1 ora = 3600 secondi (imposta a 0 in inverno)
+
+// Funzione per stampare l'ora corrente
+void printLocalTime() {
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Errore: impossibile ottenere l'ora da NTP!");
+    return;
+  }
+  
+  // Stampa l'ora formattata (HH:MM:SS) e la data (DD/MM/YYYY)
+  Serial.println(&timeinfo, "%d/%m/%Y %H:%M:%S");
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  // Connessione al Wi-Fi
+  Serial.print("Connessione a ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWi-Fi Connesso!");
+
+  // Configurazione e sincronizzazione orario NTP
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  Serial.println("Sincronizzazione orario con il server NTP...");
+}
+
+void loop() {
+  printLocalTime();
+  delay(2000); // Stampa l'ora ogni 2 secondi
+}
